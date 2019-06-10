@@ -1,0 +1,49 @@
+admin:
+  access_log_path: /tmp/admin_access.log
+  address:
+    socket_address: { address: 0.0.0.0, port_value: 9901 }
+
+static_resources:
+  listeners:
+  - name: main-listener
+    address:
+      socket_address: { address: 0.0.0.0, port_value: 51051 }
+    filter_chains:
+    - filters:
+      - name: envoy.http_connection_manager
+        config:
+          stat_prefix: grpc-web-json
+          codec_type: auto
+          route_config:
+            name: local_route
+            virtual_hosts:
+            - name: local_service
+              domains: ["*"]
+              routes:
+              - match: { prefix: "/" , grpc: {}}  # grpc:{} means that requests are only forwarded if they are found in the grpc service definition, returning 404 for others
+                route: { cluster: grpc-backend-services, timeout: { seconds: 60 } }
+          http_filters:
+          - name: envoy.grpc_json_transcoder
+            config:
+              proto_descriptor: "/data/emoji.pb"
+              services: ["proto.EmojiService"]
+              print_options:
+                add_whitespace: true
+                always_print_primitive_fields: true
+                always_print_enums_as_ints: false
+                preserve_proto_field_names: false
+          - name: envoy.cors
+          - name: envoy.router
+          - name: envoy.grpc_web
+
+  clusters:
+  - name: grpc-backend-services
+    connect_timeout: 1.25s
+    type: logical_dns
+    lb_policy: round_robin
+    dns_lookup_family: V4_ONLY
+    http2_protocol_options: {}
+    hosts:
+    - socket_address:
+        address: 127.0.0.1
+        port_value: 9000

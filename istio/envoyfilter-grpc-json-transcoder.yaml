@@ -1,0 +1,23 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: grpc-json-transcode
+spec:
+  workloadLabels:
+    app: server
+  filters:
+    - listenerMatch:
+        listenerType: SIDECAR_INBOUND
+        listenerProtocol: HTTP
+      insertPosition:
+        index: FIRST
+      filterType: HTTP
+      filterName: envoy.grpc_json_transcoder
+      filterConfig:
+        proto_descriptor: "/grpc-descriptor/emoji.pb"   # we need a tool to upload the descriptor to k8s persist volume
+        services: ["proto.EmojiService"]
+        print_options:
+          add_whitespace: true
+          always_print_primitive_fields: true
+          always_print_enums_as_ints: false
+          preserve_proto_field_names: false
