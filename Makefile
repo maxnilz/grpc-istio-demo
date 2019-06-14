@@ -102,6 +102,7 @@ build-web-ui:
 .PHONY: build-idp
 build-idp:
 	docker build --build-arg arg_npm_config_proxy=$(http_proxy) --build-arg http_proxy=$(http_proxy) --build-arg https_proxy=$(http_proxy) --build-arg no_proxy=$(no_proxy) -f docker/idp.Dockerfile -t maxnilz/grpc-istio-demo:idp .
+	docker build --build-arg arg_npm_config_proxy=$(http_proxy) --build-arg http_proxy=$(http_proxy) --build-arg https_proxy=$(http_proxy) --build-arg no_proxy=$(no_proxy) -f docker/idp-example-app.Dockerfile -t maxnilz/grpc-istio-demo:idp-example-app .
 
 .PHONY: enable-istio-debug
 enable-debug:
