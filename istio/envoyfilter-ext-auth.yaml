@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: ext-authz
+spec:
+  workloadLabels:
+    app: istio-ingressgateway
+  filters:
+    - listenerMatch:
+        listenerType: GATEWAY
+        listenerProtocol: HTTP
+      insertPosition:
+        index: FIRST
+      filterType: HTTP
+      filterName: envoy.ext_authz
+      filterConfig:
+        failure_mode_allow: false
+        grpc_service:
+          google_grpc:
+            target_uri: xianchao.me:9001
+            stat_prefix: ext_authz
+          timeout: 0.5s

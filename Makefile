@@ -13,6 +13,7 @@ help:
 	@echo "    generate-descriptor         Generate Protobuf descriptor files from proto used by envoy grpc-json filter"
 	@echo ""
 	@echo "    run-server                  Run the server"
+	@echo "    run-auth-server             Run the envoy ext auth server"
 	@echo "    run-envoy                   Run the envoy"
 	@echo "    run-server-docker           Run the server over Docker"
 	@echo "    run-client-local            Run the client and connect to local server"
@@ -61,6 +62,10 @@ generate-js: get-protoc
 .PHONY: run-server
 run-server:
 	go run -v cmd/server.go
+
+.PHONY: run-auth-server
+run-auth-server:
+	go run -v cmd/envoy-ext-authz.go
 
 .PHONY: run-envoy
 run-envoy:
