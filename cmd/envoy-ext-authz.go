@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/envoyproxy/go-control-plane/envoy/api/v2/core"
+
 	oidc "github.com/coreos/go-oidc"
 	auth "github.com/envoyproxy/go-control-plane/envoy/service/auth/v2"
 	_type "github.com/envoyproxy/go-control-plane/envoy/type"
@@ -21,6 +23,16 @@ import (
 )
 
 type server struct{}
+
+var APIAcMetas = map[string][]string{
+	"/api/say":                         {"c1", "c2", "c3"},
+	"/api/emoji":                       {"c1", "c2"},
+	"/proto.EmojiService/InsertEmojis": {"c1", "c2"},
+}
+
+func checkRBAC(ctx context.Context, req *auth.CheckRequest) bool {
+	return true
+}
 
 func (s *server) Check(ctx context.Context, req *auth.CheckRequest) (*auth.CheckResponse, error) {
 	// Extract the http request
@@ -55,7 +67,7 @@ func (s *server) Check(ctx context.Context, req *auth.CheckRequest) (*auth.Check
 		}
 		return &auth.CheckResponse{
 			Status: &rpc.Status{
-				Code: int32(rpc.PERMISSION_DENIED),
+				Code: int32(rpc.ABORTED),
 			},
 			HttpResponse: &auth.CheckResponse_DeniedResponse{
 				DeniedResponse: deniedHttpResponse,
@@ -63,7 +75,7 @@ func (s *server) Check(ctx context.Context, req *auth.CheckRequest) (*auth.Check
 		}, nil
 	}
 	token := parts[1]
-	// Create oidc provider
+	// Create oidc provider, should not be here, just for demo
 	oidcProvider, err := oidc.NewProvider(ctx, "http://192.168.39.224:31380/dex")
 	if err != nil {
 		deniedHttpResponse := &auth.DeniedHttpResponse{
@@ -74,7 +86,7 @@ func (s *server) Check(ctx context.Context, req *auth.CheckRequest) (*auth.Check
 		}
 		return &auth.CheckResponse{
 			Status: &rpc.Status{
-				Code: int32(rpc.PERMISSION_DENIED),
+				Code: int32(rpc.ABORTED),
 			},
 			HttpResponse: &auth.CheckResponse_DeniedResponse{
 				DeniedResponse: deniedHttpResponse,
@@ -87,13 +99,13 @@ func (s *server) Check(ctx context.Context, req *auth.CheckRequest) (*auth.Check
 	if err != nil {
 		deniedHttpResponse := &auth.DeniedHttpResponse{
 			Status: &_type.HttpStatus{
-				Code: _type.StatusCode_InternalServerError,
+				Code: _type.StatusCode_Unauthorized,
 			},
 			Body: err.Error(),
 		}
 		return &auth.CheckResponse{
 			Status: &rpc.Status{
-				Code: int32(rpc.PERMISSION_DENIED),
+				Code: int32(rpc.UNAUTHENTICATED),
 			},
 			HttpResponse: &auth.CheckResponse_DeniedResponse{
 				DeniedResponse: deniedHttpResponse,
@@ -102,7 +114,43 @@ func (s *server) Check(ctx context.Context, req *auth.CheckRequest) (*auth.Check
 	}
 	_ = IDToken
 
-	return &auth.CheckResponse{}, nil
+	okHttpResponse := &auth.OkHttpResponse{}
+	// Check if need ac-verify
+	if enabledACs, ok := APIAcMetas[path]; ok {
+		// Verify RBAC
+		if !checkRBAC(ctx, req) {
+			deniedHttpResponse := &auth.DeniedHttpResponse{
+				Status: &_type.HttpStatus{
+					Code: _type.StatusCode_Forbidden,
+				},
+			}
+			return &auth.CheckResponse{
+				Status: &rpc.Status{
+					Code: int32(rpc.PERMISSION_DENIED),
+				},
+				HttpResponse: &auth.CheckResponse_DeniedResponse{
+					DeniedResponse: deniedHttpResponse,
+				},
+			}, nil
+		}
+		// Forward the enable attribute condition to downstream services for the ABAC verification
+		for _, enabledAC := range enabledACs {
+			okHttpResponse.Headers = append(okHttpResponse.Headers, &core.HeaderValueOption{
+				Header: &core.HeaderValue{
+					Key: enabledAC,
+					// Later we should and addition info here,
+					// e.g: the configured metadata comes from control panel
+					Value: "",
+				},
+			})
+		}
+	}
+
+	return &auth.CheckResponse{
+		HttpResponse: &auth.CheckResponse_OkResponse{
+			OkResponse: okHttpResponse,
+		},
+	}, nil
 }
 
 func main() {
