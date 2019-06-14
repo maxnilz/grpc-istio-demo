@@ -23,14 +23,21 @@ import (
 type server struct{}
 
 func (s *server) Check(ctx context.Context, req *auth.CheckRequest) (*auth.CheckResponse, error) {
-	log.Printf("Getting ext-auth-check request: %s", time.Now().Format(time.RFC3339))
-
 	// Extract the http request
 	httpRequest := req.Attributes.Request.GetHttp()
 
 	// Extract the original path
 	path := httpRequest.GetPath()
-	_ = path
+	log.Printf("Getting ext-auth-check request %s at %s", path, time.Now().Format(time.RFC3339))
+
+	byPassPaths := []string{
+		"/dex",
+	}
+	for _, v := range byPassPaths {
+		if strings.HasPrefix(path, v) {
+			return &auth.CheckResponse{}, nil
+		}
+	}
 
 	// Check if the authorization header if valid or not
 	// Extract the id_token from authorization
@@ -57,7 +64,7 @@ func (s *server) Check(ctx context.Context, req *auth.CheckRequest) (*auth.Check
 	}
 	token := parts[1]
 	// Create oidc provider
-	oidcProvider, err := oidc.NewProvider(ctx, "http://xianchao.me:5556/dex")
+	oidcProvider, err := oidc.NewProvider(ctx, "http://192.168.39.224:31380/dex")
 	if err != nil {
 		deniedHttpResponse := &auth.DeniedHttpResponse{
 			Status: &_type.HttpStatus{

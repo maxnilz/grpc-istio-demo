@@ -24,6 +24,7 @@ help:
 	@echo ""
 	@echo "    build-server                Build the server image"
 	@echo "    build-web-ui                Build the web-ui image"
+	@echo "    build-idp                   Build the Idp image"
 	@echo ""
 	@echo "    deploy-server               Deploy the server over Kubernetes"
 	@echo "    deploy-web-ui               Deploy the web-ui over Kubernetes"
@@ -97,6 +98,10 @@ build-server:
 .PHONY: build-web-ui
 build-web-ui:
 	docker build --build-arg arg_npm_config_proxy=$(http_proxy) --build-arg http_proxy=$(http_proxy) --build-arg https_proxy=$(http_proxy) --build-arg no_proxy=$(no_proxy) -f docker/web-ui.Dockerfile -t maxnilz/grpc-istio-demo:web-ui .
+
+.PHONY: build-idp
+build-idp:
+	docker build --build-arg arg_npm_config_proxy=$(http_proxy) --build-arg http_proxy=$(http_proxy) --build-arg https_proxy=$(http_proxy) --build-arg no_proxy=$(no_proxy) -f docker/idp.Dockerfile -t maxnilz/grpc-istio-demo:idp .
 
 .PHONY: enable-istio-debug
 enable-debug:
