@@ -19,6 +19,11 @@ Based on Istio 1.1.7
 11. make run-auth-server
 12. make run-idp-example-app
 
+## Play & verify
+1. Set Http header `Authorization Bearer IDToken` before send any request
+2. Send http POST request on `/api/sayhello` & `/api/emoji` via `curl` or `postman`
+3. Send grpd-web request on `/proto.EmojiService/SayHello` & `/proto.EmojiService/InsertEmojis` via gRPC-web call
+
 ## Resources
 
 You can learn more about this project from the following articles.

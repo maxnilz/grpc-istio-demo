@@ -1,7 +1,7 @@
 // Envoy’s External Authorization Service.
 // In order to provide session management, token acquisition and RCToken functionality
 // as well as being extensible in the future to meet other SSO technologies
-// the Service better be a pipe-and-filter component.
+// TODO: The Service should be a pipe-and-filter component.
 // Filters will be able to fail or progressively augment the response returned from the TS to the Envoy gateway.
 package main
 
@@ -24,12 +24,16 @@ import (
 
 type server struct{}
 
+// Hard code here for demo.
+// TODO: Later this will comes from comes from control panel
 var APIAcMetas = map[string][]string{
 	"/api/say":                         {"c1", "c2", "c3"},
 	"/api/emoji":                       {"c1", "c2"},
 	"/proto.EmojiService/InsertEmojis": {"c1", "c2"},
 }
 
+// Hard code here for demo.
+// TODO: should call Role-based-access-control service
 func checkRBAC(ctx context.Context, req *auth.CheckRequest) bool {
 	return true
 }
@@ -138,7 +142,7 @@ func (s *server) Check(ctx context.Context, req *auth.CheckRequest) (*auth.Check
 			okHttpResponse.Headers = append(okHttpResponse.Headers, &core.HeaderValueOption{
 				Header: &core.HeaderValue{
 					Key: enabledAC,
-					// Later we should and addition info here,
+					// TODO: Later we should and addition info here,
 					// e.g: the configured metadata comes from control panel
 					Value: "",
 				},

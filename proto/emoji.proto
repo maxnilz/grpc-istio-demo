@@ -8,7 +8,7 @@ service EmojiService {
   // Sends a greeting
   rpc SayHello (HelloRequest) returns (HelloResponse) {
     option (google.api.http) = {
-      post: "/api/say"
+      post: "/api/sayhello"
       body: "*"
     };
   }
