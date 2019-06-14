@@ -19,6 +19,7 @@ help:
 	@echo "    run-client-local            Run the client and connect to local server"
 	@echo "    run-client-istio-grpc-web   Run the client and connect to server with grpc-web via Istio"
 	@echo "    run-client-istio-grpc-raw   Run the client and connect to server with grpc-raw via Istio"
+	@echo "    run-idp-example-app         Run the example frontend app of idp so that we can get token from idp"
 	@echo ""
 	@echo "    enable-istio-debug          Enable istio-proxy debug"
 	@echo ""
@@ -90,6 +91,10 @@ run-client-istio-grpc-web:
 .PHONY: run-client-istio-grpc-raw
 run-client-istio-grpc-raw:
 	go run -v cmd/client.go --server '$(GATEWAY_URL):31400' --text 'I like :pizza: and :sushi:!'
+
+.PHONY: run-idp-example-app
+run-idp-example-app:
+	docker run -p5555:5555 maxnilz/grpc-istio-demo:idp-example-app --issuer http://192.168.39.224:31380/dex --listen http://0.0.0.0:5555
 
 .PHONY: build-server
 build-server:

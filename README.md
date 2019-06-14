@@ -15,8 +15,8 @@ Based on Istio 1.1.7
 7. kubectl apply -f istio/idp.yaml
 8. kubectl apply -f istio/gateway.yaml
 9. kubectl apply -f istio/envoyfilter*.yaml
-10. docker run -p5555:5555 maxnilz/grpc-istio-demo:idp-example-app --issuer http://192.168.39.224:31380/dex --listen http://0.0.0.0:5555
-11. make run-auth-server
+10. make run-auth-server
+11. make run-idp-example-app
 
 ## Resources
 
