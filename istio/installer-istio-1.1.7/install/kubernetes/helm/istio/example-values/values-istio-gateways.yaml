@@ -36,7 +36,8 @@ gateways:
   custom-gateway:
     enabled: true
     labels:
-      app: custom-gateway
+      app: istio-custom-ingressgateway
+      istio: custom-ingressgateway
     replicaCount: 1
     autoscaleMin: 1
     autoscaleMax: 5

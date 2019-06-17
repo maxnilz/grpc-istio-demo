@@ -15,9 +15,11 @@ Based on Istio 1.1.7
 7. kubectl apply -f istio/web-ui.yaml
 8. kubectl apply -f istio/idp.yaml
 9. kubectl apply -f istio/gateway.yaml
-10. kubectl apply -f istio/envoyfilter*.yaml
-11. make run-auth-server
-12. make run-idp-example-app
+10. make create-istio-custom-gateway
+11. kubectl apply -f istio/gateway-frontend.yaml
+12. kubectl apply -f istio/envoyfilter*.yaml
+13. make run-auth-server
+14. make run-idp-example-app
 
 ## Play & verify
 1. Set Http header `Authorization Bearer IDToken` before send any request

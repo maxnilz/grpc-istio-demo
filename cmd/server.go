@@ -27,17 +27,6 @@ var ac1 = AttributeCondition{key: "c1", desc: "Can only perform the ops(update, 
 var ac2 = AttributeCondition{key: "c2", desc: "can only update the salary field of the jobs that he has been assigned to"}
 var ac3 = AttributeCondition{key: "c3", desc: "can only update the requirements field of the jobs that he has been assigned to"}
 
-//var APIAcMetas = []APIAcMeta{
-//	{
-//		api: "/api/say",
-//		supportedACs: []AttributeCondition{
-//			ac1,
-//			ac2,
-//			ac3,
-//		},
-//	},
-//}
-
 func IsAttributeConditionEnabled(ctx context.Context, ac AttributeCondition) bool {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {

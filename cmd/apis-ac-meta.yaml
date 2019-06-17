@@ -1,0 +1,39 @@
+service: demo-server
+ac-metas:
+  - resource: '/api/say'
+    action: 'POST'
+    supported-acs:
+      - name: c1
+        desc: c1
+      - name: c2
+        desc: c2
+      - name: c3
+        desc: c3
+    enabled-acs:
+      - name: c1
+      - name: c2
+      - name: c3
+  - api: '/api/emoji'
+    action: 'POST'
+    supported-acs:
+      - name: c1
+        desc: c1
+      - name: c2
+        desc: c2
+      - name: c3
+        desc: c3
+    enabled-acs:
+      - name: c1
+      - name: c3
+  - api: '/proto.EmojiService/InsertEmojis'
+    action: 'POST'
+    supported-acs:
+      - name: c1
+        desc: c1
+      - name: c2
+        desc: c2
+      - name: c3
+        desc: c3
+    enabled-acs:
+      - name: c1
+      - name: c2

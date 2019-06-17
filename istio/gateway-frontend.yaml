@@ -1,0 +1,34 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: gateway-frontend
+spec:
+  selector:
+    istio: custom-ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+  - port:
+      number: 31400
+      name: grpc
+      protocol: HTTP
+    hosts:
+      - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: virtual-service-fontend
+spec:
+  hosts:
+    - "*"
+  gateways:
+  - gateway-frontend
+  http:
+  - route:
+    - destination:
+        host: web-ui

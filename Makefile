@@ -22,6 +22,7 @@ help:
 	@echo "    run-idp-example-app         Run the example frontend app of idp so that we can get token from idp"
 	@echo ""
 	@echo "    enable-istio-debug          Enable istio-proxy debug"
+	@echo "    create-istio-custom-gateway Create frontend istio ingressgateway"
 	@echo ""
 	@echo "    build-server                Build the server image"
 	@echo "    build-web-ui                Build the web-ui image"
@@ -74,7 +75,7 @@ run-envoy:
 	docker run -it --rm --name envoy --network="host" \
 	  -v "$(PWD)/proto/emoji.pb:/data/emoji.pb:ro" \
 	  -v "$(PWD)/local/envoy-config.yml:/etc/envoy/envoy.yaml:ro" \
-	  envoyproxy/envoy
+	  envoyproxy/envoy /usr/local/bin/envoy -c /etc/envoy/envoy.yaml -l trace
 
 .PHONY: run-server-docker
 run-server-docker:
@@ -114,6 +115,10 @@ enable-debug:
 	kubectl patch deployment server -p '{"spec": {"template": {"spec": {"containers": [{"name": "istio-proxy", "image": "docker.io/istio/proxy_debug:1.1.7"}]}}}}'
 	cd istio/installer-istio-1.17 && helm template install/kubernetes/helm/istio --namespace=istio-system -x templates/configmap.yaml --set global.proxy.accessLogFile="/dev/stdout" | kubectl replace -f -
 
+.PHONY: create-istio-custom-gateway
+create-istio-custom-gateway:
+	cd istio/installer-istio-1.17 && helm template install/kubernetes/helm/istio --name istio --namespace istio-system \                                                                                <<<
+	                                     --values install/kubernetes/helm/istio/example-values/values-istio-gateways.yaml | kubectl apply -f
 .PHONY: deploy-server
 deploy-server:
 	kubectl apply -f <(istioctl kube-inject -f istio/server.yaml)

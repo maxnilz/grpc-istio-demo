@@ -2,7 +2,7 @@ FROM node:8.15 as builder
 
 ARG arg_npm_config_proxy
 ENV npm_config_proxy=${arg_npm_config_proxy}
-ENV npm_config_https-proxy=${arg_npm_config_proxy}
+ENV npm_config_https_proxy=${arg_npm_config_proxy}
 
 WORKDIR /web-ui/
 COPY web-ui/ .
