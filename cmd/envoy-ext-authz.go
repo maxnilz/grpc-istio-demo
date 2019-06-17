@@ -14,8 +14,7 @@ import (
 
 	oidc "github.com/coreos/go-oidc"
 	"github.com/envoyproxy/go-control-plane/envoy/api/v2/core"
-	v2 "github.com/envoyproxy/go-control-plane/envoy/service/auth/v2"
-	auth "github.com/envoyproxy/go-control-plane/envoy/service/auth/v2alpha"
+	auth "github.com/envoyproxy/go-control-plane/envoy/service/auth/v2"
 	_type "github.com/envoyproxy/go-control-plane/envoy/type"
 	"github.com/gogo/googleapis/google/rpc"
 	"google.golang.org/grpc"
@@ -51,14 +50,14 @@ var APIAcMetas = map[string][]string{
 
 // Hard code here for demo.
 // TODO: should call Role-based-access-control service
-func checkRBAC(ctx context.Context, req *v2.CheckRequest) bool {
+func checkRBAC(ctx context.Context, req *auth.CheckRequest) bool {
 	_ = ctx
 	_ = req
 
 	return true
 }
 
-func (s *server) Check(ctx context.Context, req *v2.CheckRequest) (*v2.CheckResponse, error) {
+func (s *server) Check(ctx context.Context, req *auth.CheckRequest) (*auth.CheckResponse, error) {
 	// Extract the http request
 	httpRequest := req.Attributes.Request.GetHttp()
 
@@ -71,7 +70,7 @@ func (s *server) Check(ctx context.Context, req *v2.CheckRequest) (*v2.CheckResp
 	}
 	for _, v := range byPassPaths {
 		if strings.HasPrefix(path, v) {
-			return &v2.CheckResponse{}, nil
+			return &auth.CheckResponse{}, nil
 		}
 	}
 
@@ -85,16 +84,16 @@ func (s *server) Check(ctx context.Context, req *v2.CheckRequest) (*v2.CheckResp
 	}
 	parts := strings.Fields(authorization)
 	if len(parts) != 2 || !strings.EqualFold(parts[0], "bearer") {
-		deniedHttpResponse := &v2.DeniedHttpResponse{
+		deniedHttpResponse := &auth.DeniedHttpResponse{
 			Status: &_type.HttpStatus{
 				Code: _type.StatusCode_Unauthorized,
 			},
 		}
-		return &v2.CheckResponse{
+		return &auth.CheckResponse{
 			Status: &rpc.Status{
 				Code: int32(rpc.ABORTED),
 			},
-			HttpResponse: &v2.CheckResponse_DeniedResponse{
+			HttpResponse: &auth.CheckResponse_DeniedResponse{
 				DeniedResponse: deniedHttpResponse,
 			},
 		}, nil
@@ -103,17 +102,17 @@ func (s *server) Check(ctx context.Context, req *v2.CheckRequest) (*v2.CheckResp
 	// Create oidc provider, should not be here, just for demo
 	oidcProvider, err := oidc.NewProvider(ctx, "http://192.168.39.224:31380/dex")
 	if err != nil {
-		deniedHttpResponse := &v2.DeniedHttpResponse{
+		deniedHttpResponse := &auth.DeniedHttpResponse{
 			Status: &_type.HttpStatus{
 				Code: _type.StatusCode_InternalServerError,
 			},
 			Body: err.Error(),
 		}
-		return &v2.CheckResponse{
+		return &auth.CheckResponse{
 			Status: &rpc.Status{
 				Code: int32(rpc.ABORTED),
 			},
-			HttpResponse: &v2.CheckResponse_DeniedResponse{
+			HttpResponse: &auth.CheckResponse_DeniedResponse{
 				DeniedResponse: deniedHttpResponse,
 			},
 		}, nil
@@ -122,38 +121,38 @@ func (s *server) Check(ctx context.Context, req *v2.CheckRequest) (*v2.CheckResp
 	verifier := oidcProvider.Verifier(oidcConfig)
 	IDToken, err := verifier.Verify(ctx, token)
 	if err != nil {
-		deniedHttpResponse := &v2.DeniedHttpResponse{
+		deniedHttpResponse := &auth.DeniedHttpResponse{
 			Status: &_type.HttpStatus{
 				Code: _type.StatusCode_Unauthorized,
 			},
 			Body: err.Error(),
 		}
-		return &v2.CheckResponse{
+		return &auth.CheckResponse{
 			Status: &rpc.Status{
 				Code: int32(rpc.UNAUTHENTICATED),
 			},
-			HttpResponse: &v2.CheckResponse_DeniedResponse{
+			HttpResponse: &auth.CheckResponse_DeniedResponse{
 				DeniedResponse: deniedHttpResponse,
 			},
 		}, nil
 	}
 	_ = IDToken
 
-	okHttpResponse := &v2.OkHttpResponse{}
+	okHttpResponse := &auth.OkHttpResponse{}
 	// Check if need ac-verify
 	if enabledACs, ok := APIAcMetas[path]; ok {
 		// Verify RBAC
 		if !checkRBAC(ctx, req) {
-			deniedHttpResponse := &v2.DeniedHttpResponse{
+			deniedHttpResponse := &auth.DeniedHttpResponse{
 				Status: &_type.HttpStatus{
 					Code: _type.StatusCode_Forbidden,
 				},
 			}
-			return &v2.CheckResponse{
+			return &auth.CheckResponse{
 				Status: &rpc.Status{
 					Code: int32(rpc.PERMISSION_DENIED),
 				},
-				HttpResponse: &v2.CheckResponse_DeniedResponse{
+				HttpResponse: &auth.CheckResponse_DeniedResponse{
 					DeniedResponse: deniedHttpResponse,
 				},
 			}, nil
@@ -171,8 +170,8 @@ func (s *server) Check(ctx context.Context, req *v2.CheckRequest) (*v2.CheckResp
 		}
 	}
 
-	return &v2.CheckResponse{
-		HttpResponse: &v2.CheckResponse_OkResponse{
+	return &auth.CheckResponse{
+		HttpResponse: &auth.CheckResponse_OkResponse{
 			OkResponse: okHttpResponse,
 		},
 	}, nil

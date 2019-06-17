@@ -113,11 +113,11 @@ build-idp:
 .PHONY: enable-istio-debug
 enable-debug:
 	kubectl patch deployment server -p '{"spec": {"template": {"spec": {"containers": [{"name": "istio-proxy", "image": "docker.io/istio/proxy_debug:1.1.7"}]}}}}'
-	cd istio/installer-istio-1.17 && helm template install/kubernetes/helm/istio --namespace=istio-system -x templates/configmap.yaml --set global.proxy.accessLogFile="/dev/stdout" | kubectl replace -f -
+	cd istio/installer-istio-1.1.7 && helm template install/kubernetes/helm/istio --namespace=istio-system -x templates/configmap.yaml --set global.proxy.accessLogFile="/dev/stdout" | kubectl replace -f -
 
 .PHONY: create-istio-custom-gateway
 create-istio-custom-gateway:
-	cd istio/installer-istio-1.17 && helm template install/kubernetes/helm/istio --name istio --namespace istio-system \                                                                                <<<
+	cd istio/installer-istio-1.1.7 && helm template install/kubernetes/helm/istio --name istio --namespace istio-system \                                                                                <<<
 	                                     --values install/kubernetes/helm/istio/example-values/values-istio-gateways.yaml | kubectl apply -f
 .PHONY: deploy-server
 deploy-server:

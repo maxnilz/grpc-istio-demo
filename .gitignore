@@ -14,6 +14,5 @@
 .idea
 .bin
 istio/installer-istio-1.1.7/bin
-/vendor
 /web-ui/node_modules
 /web-ui/dist
