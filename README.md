@@ -21,6 +21,8 @@ Based on Istio 1.1.7
 13. make run-auth-server
 14. make run-idp-example-app
 
+*Note: Since I'm using minikube, there is an IP address is hardcode `192.168.39.224` & port `31380` as well*
+
 ## Play & verify
 1. Set Http header `Authorization Bearer IDToken` before send any request
 2. Send http POST request on `/api/sayhello` & `/api/emoji` via `curl` or `postman`
