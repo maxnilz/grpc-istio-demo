@@ -21,7 +21,7 @@ Based on Istio 1.1.7
 13. make run-idp-example-app
 
 - *Note: Since I'm using minikube, there is an IP address is hardcode `192.168.39.224` & port `31380` as well*
-- *Note: There is a domain `xianchao.me` point to your my machine with the network-interface IP address*
+- *Note: There is a domain `xianchao.me` point to my machine with the network-interface IP address*
 
 ## Play & verify
 1. Set Http header `Authorization Bearer IDToken` before send any request
