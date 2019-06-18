@@ -25,8 +25,8 @@ Based on Istio 1.1.7
 
 ## Play & verify
 1. Set Http header `Authorization Bearer IDToken` before send any request
-2. Send http POST request on `/demo-server/v1/sayhello` & `/demo-server/v1/emoji` via `curl` or `postman`
-3. Send grpd-web request on `/demo-server/proto.EmojiService/InsertEmojis` via browser
+2. Send http POST request to `/demo-server/v1/sayhello` & `/demo-server/v1/emoji` via `curl` or `postman`
+3. Send grpc-web request to `/demo-server/proto.EmojiService/InsertEmojis` via browser
 
 ## Resources
 
