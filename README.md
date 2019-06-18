@@ -7,7 +7,7 @@ Based on Istio 1.1.7
 ## How to start
 
 1. install minikube
-2. install pv & pvc
+2. install pv & pvc (used by envoy.grpc_json_transcoder filter, mounting the proto_descriptor)
 3. install istio by using the istio's installer in this repo
 4. kubectl label namespace default istio-injection=enabled
 5. kubectl apply -f istio/idp.yaml
@@ -15,7 +15,7 @@ Based on Istio 1.1.7
 7. kubectl apply -f istio/web-ui.yaml
 8. kubectl apply -f istio/idp.yaml
 9. kubectl apply -f istio/gateway.yaml
-10. make create-istio-custom-gateway
+10. make create-istio-custom-gateway (used by the front-end application only which have no envoy.ext_authz applied)
 11. kubectl apply -f istio/gateway-frontend.yaml
 12. kubectl apply -f istio/envoyfilter*.yaml
 13. make run-auth-server
@@ -26,8 +26,8 @@ Based on Istio 1.1.7
 
 ## Play & verify
 1. Set Http header `Authorization Bearer IDToken` before send any request
-2. Send http POST request on `/api/sayhello` & `/api/emoji` via `curl` or `postman`
-3. Send grpd-web request on `/proto.EmojiService/SayHello` & `/proto.EmojiService/InsertEmojis` via gRPC-web call
+2. Send http POST request on `/demo-server/v1/sayhello` & `/demo-server/v1/emoji` via `curl` or `postman`
+3. Send grpd-web request on `/demo-server/proto.EmojiService/InsertEmojis` via browser
 
 ## Resources
 
