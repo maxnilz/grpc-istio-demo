@@ -27,7 +27,7 @@ help:
 	@echo ""
 	@echo "    build-server                Build the server image"
 	@echo "    build-web-ui                Build the web-ui image"
-	@echo "    build-idp                   Build the Idp image"
+	@echo "    build-idp                   Build the idp image"
 	@echo ""
 	@echo "    deploy-server               Deploy the server over Kubernetes"
 	@echo "    deploy-web-ui               Deploy the web-ui over Kubernetes"

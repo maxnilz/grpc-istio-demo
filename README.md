@@ -13,13 +13,12 @@ Based on Istio 1.1.7
 5. kubectl apply -f istio/idp.yaml
 6. kubectl apply -f istio/server.yaml
 7. kubectl apply -f istio/web-ui.yaml
-8. kubectl apply -f istio/idp.yaml
-9. kubectl apply -f istio/gateway.yaml
+8. kubectl apply -f istio/gateway.yaml
+9. kubectl apply -f istio/envoyfilter*.yaml
 10. make create-istio-custom-gateway (used by the front-end application only which have no envoy.ext_authz applied)
 11. kubectl apply -f istio/gateway-frontend.yaml
-12. kubectl apply -f istio/envoyfilter*.yaml
-13. make run-auth-server
-14. make run-idp-example-app
+12. make run-auth-server
+13. make run-idp-example-app
 
 *Note: Since I'm using minikube, there is an IP address is hardcode `192.168.39.224` & port `31380` as well*
 *Note: There is a domain `xianchao.me` is point to your local machine with the network-interface IP address*
