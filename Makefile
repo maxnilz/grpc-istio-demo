@@ -100,7 +100,7 @@ run-client-istio-grpc-raw:
 
 .PHONY: run-idp-example-app
 run-idp-example-app:
-	docker run -p5555:5555 maxnilz/grpc-istio-demo:idp-example-app --issuer http://192.168.39.224:31380/dex --listen http://0.0.0.0:5555
+	docker run -p5555:5555 maxnilz/grpc-istio-demo:idp-example-app --issuer http://$(GATEWAY_URL):31380/dex --listen http://0.0.0.0:5555
 
 .PHONY: build-server
 build-server:
