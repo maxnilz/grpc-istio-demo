@@ -122,8 +122,8 @@ enable-debug:
 
 .PHONY: create-istio-custom-gateway
 create-istio-custom-gateway:
-	cd istio/installer-istio-1.1.7 && helm template install/kubernetes/helm/istio --name istio --namespace istio-system \                                                                                <<<
-	                                     --values install/kubernetes/helm/istio/example-values/values-istio-gateways.yaml | kubectl apply -f
+	cd istio/installer-istio-1.1.7 && helm template install/kubernetes/helm/istio --name istio --namespace istio-system --values install/kubernetes/helm/istio/example-values/values-istio-gateways.yaml | kubectl apply -f
+
 .PHONY: deploy-server
 deploy-server:
 	kubectl apply -f <(istioctl kube-inject -f istio/server.yaml)
