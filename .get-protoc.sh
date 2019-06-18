@@ -63,13 +63,13 @@ function prepare_protoc(){
     rm ${ZIP}
 
     # Install golang proto plugin
-	go install -v github.com/golang/protobuf/protoc-gen-go
+    go install -v github.com/golang/protobuf/protoc-gen-go
     go install -v github.com/gogo/protobuf/protoc-gen-gogoslick
-	go install -v github.com/golang/mock/mockgen
+    go install -v github.com/golang/mock/mockgen
 
-	# Install protoc-gen-grpc-web
+    # Install protoc-gen-grpc-web
     VERSION="1.0.3"
-	BINARY="protoc-gen-grpc-web-${VERSION}-${OS}-x86_64"
+    BINARY="protoc-gen-grpc-web-${VERSION}-${OS}-x86_64"
     URL="https://github.com/grpc/grpc-web/releases/download/${VERSION}/${BINARY}"
     wget ${URL}
     mv ${BINARY} ${BIN_DIR}/protoc-gen-grpc-web
