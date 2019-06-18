@@ -31,7 +31,9 @@ spec:
   http:
   - match:
     - uri:
-        prefix: /proto.EmojiService
+        prefix: /demo-server/proto.EmojiService/
+    rewrite:
+      uri: /proto.EmojiService/
     route:
     - destination:
         host: server

@@ -1,0 +1,30 @@
+service: demo-server
+ac-metas:
+  - resource: '/v1/sayhello'
+    action: 'POST'
+    supported-acs:
+      - name: c1
+        metas: '{max-allow-update-count: 10}'
+        desc: 'Can only perform the ops(update, delete, read) on the jobs he created'
+      - name: c2
+        desc: 'can only update the salary field of the jobs that he has been assigned to'
+      - name: c3
+        desc: 'can only update the requirements field of the jobs that he has been assigned to'
+  - resource: '/v1/emoji'
+    action: 'POST'
+    supported-acs:
+      - name: c1
+        desc: 'Can only perform the ops(update, delete, read) on the jobs he created'
+      - name: c2
+        desc: 'can only update the salary field of the jobs that he has been assigned to'
+      - name: c3
+        desc: 'can only update the requirements field of the jobs that he has been assigned to'
+  - resource: '/proto.EmojiService/InsertEmojis'
+    action: 'POST'
+    supported-acs:
+      - name: c1
+        desc: 'Can only perform the ops(update, delete, read) on the jobs he created'
+      - name: c2
+        desc: 'can only update the salary field of the jobs that he has been assigned to'
+      - name: c3
+        desc: 'can only update the requirements field of the jobs that he has been assigned to'

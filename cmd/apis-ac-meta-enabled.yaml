@@ -1,0 +1,20 @@
+services:
+  - service: demo-server
+    ac-metas:
+      - resource: '/v1/sayhello'
+        action: 'POST'
+        enabled-acs:
+          - name: c1
+            metas: '{max-allow-update-count: 5}'
+          - name: c2
+          - name: c3
+      - resource: '/v1/emoji'
+        action: 'POST'
+        enabled-acs:
+          - name: c1
+          - name: c3
+      - resource: '/proto.EmojiService/InsertEmojis'
+        action: 'POST'
+        enabled-acs:
+          - name: c1
+          - name: c2

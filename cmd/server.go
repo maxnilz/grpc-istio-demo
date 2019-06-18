@@ -27,33 +27,29 @@ var ac1 = AttributeCondition{key: "c1", desc: "Can only perform the ops(update, 
 var ac2 = AttributeCondition{key: "c2", desc: "can only update the salary field of the jobs that he has been assigned to"}
 var ac3 = AttributeCondition{key: "c3", desc: "can only update the requirements field of the jobs that he has been assigned to"}
 
-func IsAttributeConditionEnabled(ctx context.Context, ac AttributeCondition) bool {
+func IsAttributeConditionEnabled(ctx context.Context, ac AttributeCondition) (meta string, enabled bool) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return false
+		return
 	}
 
 	res := md.Get(ac.key)
 	if len(res) == 0 {
-		return false
+		return
 	}
-	return true
+	return res[0], true
 }
 
 func (s *server) InsertEmojis(ctx context.Context, req *proto.EmojiRequest) (*proto.EmojiResponse, error) {
 	log.Printf("Client says: %s", req.InputText)
-	md, ok := metadata.FromIncomingContext(ctx)
-	if ok {
-		log.Println(md)
-	}
 
-	if IsAttributeConditionEnabled(ctx, ac1) {
-		log.Printf("Hi, we got ac in InsertEmojis: %v\n", ac1)
+	if meta, ok := IsAttributeConditionEnabled(ctx, ac1); ok {
+		log.Printf("Hi, we got ac in InsertEmojis: %v, with meta:%v\n", ac1, meta)
 	}
-	if IsAttributeConditionEnabled(ctx, ac2) {
+	if _, ok := IsAttributeConditionEnabled(ctx, ac2); ok {
 		log.Printf("Hi, we got ac in InsertEmojis: %v\n", ac2)
 	}
-	if IsAttributeConditionEnabled(ctx, ac3) {
+	if _, ok := IsAttributeConditionEnabled(ctx, ac3); ok {
 		log.Printf("Hi, we got ac in InsertEmojis: %v\n", ac3)
 	}
 
@@ -64,18 +60,14 @@ func (s *server) InsertEmojis(ctx context.Context, req *proto.EmojiRequest) (*pr
 
 func (s *server) SayHello(ctx context.Context, req *proto.HelloRequest) (*proto.HelloResponse, error) {
 	log.Printf("Client: %s greeting!", req.Name)
-	md, ok := metadata.FromIncomingContext(ctx)
-	if ok {
-		log.Println(md)
-	}
 
-	if IsAttributeConditionEnabled(ctx, ac1) {
-		log.Printf("Hi, we got ac in SayHello: %v\n", ac1)
+	if meta, ok := IsAttributeConditionEnabled(ctx, ac1); ok {
+		log.Printf("Hi, we got ac in SayHello: %v, with meta: %v\n", ac1, meta)
 	}
-	if IsAttributeConditionEnabled(ctx, ac2) {
+	if _, ok := IsAttributeConditionEnabled(ctx, ac2); ok {
 		log.Printf("Hi, we got ac in SayHello: %v\n", ac2)
 	}
-	if IsAttributeConditionEnabled(ctx, ac3) {
+	if _, ok := IsAttributeConditionEnabled(ctx, ac3); ok {
 		log.Printf("Hi, we got ac in SayHello: %v\n", ac3)
 	}
 

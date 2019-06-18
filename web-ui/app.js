@@ -1,7 +1,7 @@
 const {EmojiRequest, EmojiResponse} = require('./emoji-without-annotations_pb.js');
 const {EmojiServiceClient} = require('./emoji-without-annotations_grpc_web_pb.js');
 
-var client = new EmojiServiceClient('http://' + window.location.hostname + ':31380');
+var client = new EmojiServiceClient('http://' + window.location.hostname + ':31380/demo-server');
 var editor = document.getElementById('editor');
 
 window.insertEmojis = function() {
