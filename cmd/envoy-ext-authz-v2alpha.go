@@ -61,15 +61,6 @@ func checkRBAC(ctx context.Context, req *authv2.CheckRequest) bool {
 	return true
 }
 
-// Hard code here for demo.
-// TODO: should call Role-based-access-control service
-func checkRBAC(ctx context.Context, req *authv2.CheckRequest) bool {
-	_ = ctx
-	_ = req
-
-	return true
-}
-
 // parsePath extract service name, resource and action name
 func parsePath(req *authv2.CheckRequest) (service string, resource string, action string) {
 	httpRequest := req.Attributes.Request.GetHttp()

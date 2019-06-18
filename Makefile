@@ -14,6 +14,7 @@ help:
 	@echo ""
 	@echo "    run-server                  Run the server"
 	@echo "    run-auth-server             Run the envoy ext auth server"
+	@echo "    run-auth-alpha-server       Run the envoy ext auth v2alpha server"
 	@echo "    run-envoy                   Run the envoy"
 	@echo "    run-server-docker           Run the server over Docker"
 	@echo "    run-client-local            Run the client and connect to local server"
@@ -69,6 +70,10 @@ run-server:
 .PHONY: run-auth-server
 run-auth-server:
 	go run -v cmd/envoy-ext-authz.go
+
+.PHONY: run-auth-alpha-server
+run-auth-alpha-server:
+	go run -v cmd/envoy-ext-authz-v2alpha.go
 
 .PHONY: run-envoy
 run-envoy:
