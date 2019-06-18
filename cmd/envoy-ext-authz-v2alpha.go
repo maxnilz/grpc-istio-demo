@@ -7,58 +7,96 @@ package main
 
 import (
 	"context"
+	"io/ioutil"
 	"log"
 	"net"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
 	oidc "github.com/coreos/go-oidc"
 	"github.com/envoyproxy/go-control-plane/envoy/api/v2/core"
-	v2 "github.com/envoyproxy/go-control-plane/envoy/service/auth/v2"
-	auth "github.com/envoyproxy/go-control-plane/envoy/service/auth/v2alpha"
+	authv2 "github.com/envoyproxy/go-control-plane/envoy/service/auth/v2"
+	authv2alpha "github.com/envoyproxy/go-control-plane/envoy/service/auth/v2alpha"
 	_type "github.com/envoyproxy/go-control-plane/envoy/type"
 	"github.com/gogo/googleapis/google/rpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	yaml "gopkg.in/yaml.v2"
 )
 
 type server struct{}
 
 type AC struct {
-	Name string `json:"name"`
-	Desc string `json:"desc"`
+	Name  string `json:"name"`
+	Metas string `json:"metas"`
+	Desc  string `json:"desc"`
 }
 
 type ACMeta struct {
 	Resource     string `json:"resource"`
 	Action       string `json:"action"`
-	SupportedACs []AC   `json:"supported-acs"`
-	EnabledACs   []AC   `json:"enabled-acs"`
+	SupportedACs []AC   `json:"supported-acs" yaml:"supported-acs"`
+	EnabledACs   []AC   `json:"enabled-acs" yaml:"enabled-acs"`
 }
 
-type APIACmeta struct {
+type APIACMeta struct {
 	Service string   `json:"service"`
-	ACMetas []ACMeta `json:"ac-metas"`
+	ACMetas []ACMeta `json:"ac-metas" yaml:"ac-metas"`
 }
 
-// Hard code here for demo.
-// TODO: Later this will comes from comes from control panel
-var APIAcMetas = map[string][]string{
-	"/api/say":                         {"c1", "c2", "c3"},
-	"/api/emoji":                       {"c1", "c2"},
-	"/proto.EmojiService/InsertEmojis": {"c1", "c2"},
+type ServicesAPIACMeta struct {
+	Services []APIACMeta `json:"services"`
 }
+
+var serviceACMetas map[string][]AC
 
 // Hard code here for demo.
 // TODO: should call Role-based-access-control service
-func checkRBAC(ctx context.Context, req *v2.CheckRequest) bool {
+func checkRBAC(ctx context.Context, req *authv2.CheckRequest) bool {
 	_ = ctx
 	_ = req
 
 	return true
 }
 
-func (s *server) Check(ctx context.Context, req *v2.CheckRequest) (*v2.CheckResponse, error) {
+// Hard code here for demo.
+// TODO: should call Role-based-access-control service
+func checkRBAC(ctx context.Context, req *authv2.CheckRequest) bool {
+	_ = ctx
+	_ = req
+
+	return true
+}
+
+// parsePath extract service name, resource and action name
+func parsePath(req *authv2.CheckRequest) (service string, resource string, action string) {
+	httpRequest := req.Attributes.Request.GetHttp()
+
+	parts := strings.Split(httpRequest.GetPath(), "/")
+	if len(parts) > 1 {
+		service = parts[1]
+	}
+	resource = strings.TrimPrefix(httpRequest.GetPath(), "/"+service)
+	action = httpRequest.GetMethod()
+	return
+}
+
+// acIDFromReq combine the unique id for a specific request
+func acIDFromReq(req *authv2.CheckRequest) (id string) {
+	service, resource, action := parsePath(req)
+	id = strings.Join([]string{service, resource, action}, ":")
+	return
+}
+
+// acIDFromConf ...
+func acIDFromConf(service, resource, action string) (id string) {
+	id = strings.Join([]string{service, resource, action}, ":")
+	return
+}
+
+func (s *server) Check(ctx context.Context, req *authv2.CheckRequest) (*authv2.CheckResponse, error) {
 	// Extract the http request
 	httpRequest := req.Attributes.Request.GetHttp()
 
@@ -71,7 +109,7 @@ func (s *server) Check(ctx context.Context, req *v2.CheckRequest) (*v2.CheckResp
 	}
 	for _, v := range byPassPaths {
 		if strings.HasPrefix(path, v) {
-			return &v2.CheckResponse{}, nil
+			return &authv2.CheckResponse{}, nil
 		}
 	}
 
@@ -85,16 +123,16 @@ func (s *server) Check(ctx context.Context, req *v2.CheckRequest) (*v2.CheckResp
 	}
 	parts := strings.Fields(authorization)
 	if len(parts) != 2 || !strings.EqualFold(parts[0], "bearer") {
-		deniedHttpResponse := &v2.DeniedHttpResponse{
+		deniedHttpResponse := &authv2.DeniedHttpResponse{
 			Status: &_type.HttpStatus{
 				Code: _type.StatusCode_Unauthorized,
 			},
 		}
-		return &v2.CheckResponse{
+		return &authv2.CheckResponse{
 			Status: &rpc.Status{
 				Code: int32(rpc.ABORTED),
 			},
-			HttpResponse: &v2.CheckResponse_DeniedResponse{
+			HttpResponse: &authv2.CheckResponse_DeniedResponse{
 				DeniedResponse: deniedHttpResponse,
 			},
 		}, nil
@@ -103,17 +141,17 @@ func (s *server) Check(ctx context.Context, req *v2.CheckRequest) (*v2.CheckResp
 	// Create oidc provider, should not be here, just for demo
 	oidcProvider, err := oidc.NewProvider(ctx, "http://192.168.39.224:31380/dex")
 	if err != nil {
-		deniedHttpResponse := &v2.DeniedHttpResponse{
+		deniedHttpResponse := &authv2.DeniedHttpResponse{
 			Status: &_type.HttpStatus{
 				Code: _type.StatusCode_InternalServerError,
 			},
 			Body: err.Error(),
 		}
-		return &v2.CheckResponse{
+		return &authv2.CheckResponse{
 			Status: &rpc.Status{
 				Code: int32(rpc.ABORTED),
 			},
-			HttpResponse: &v2.CheckResponse_DeniedResponse{
+			HttpResponse: &authv2.CheckResponse_DeniedResponse{
 				DeniedResponse: deniedHttpResponse,
 			},
 		}, nil
@@ -122,63 +160,89 @@ func (s *server) Check(ctx context.Context, req *v2.CheckRequest) (*v2.CheckResp
 	verifier := oidcProvider.Verifier(oidcConfig)
 	IDToken, err := verifier.Verify(ctx, token)
 	if err != nil {
-		deniedHttpResponse := &v2.DeniedHttpResponse{
+		deniedHttpResponse := &authv2.DeniedHttpResponse{
 			Status: &_type.HttpStatus{
 				Code: _type.StatusCode_Unauthorized,
 			},
 			Body: err.Error(),
 		}
-		return &v2.CheckResponse{
+		return &authv2.CheckResponse{
 			Status: &rpc.Status{
 				Code: int32(rpc.UNAUTHENTICATED),
 			},
-			HttpResponse: &v2.CheckResponse_DeniedResponse{
+			HttpResponse: &authv2.CheckResponse_DeniedResponse{
 				DeniedResponse: deniedHttpResponse,
 			},
 		}, nil
 	}
 	_ = IDToken
 
-	okHttpResponse := &v2.OkHttpResponse{}
-	// Check if need ac-verify
-	if enabledACs, ok := APIAcMetas[path]; ok {
-		// Verify RBAC
-		if !checkRBAC(ctx, req) {
-			deniedHttpResponse := &v2.DeniedHttpResponse{
-				Status: &_type.HttpStatus{
-					Code: _type.StatusCode_Forbidden,
-				},
-			}
-			return &v2.CheckResponse{
-				Status: &rpc.Status{
-					Code: int32(rpc.PERMISSION_DENIED),
-				},
-				HttpResponse: &v2.CheckResponse_DeniedResponse{
-					DeniedResponse: deniedHttpResponse,
-				},
-			}, nil
+	// Verify RBAC
+	if !checkRBAC(ctx, req) {
+		deniedHttpResponse := &authv2.DeniedHttpResponse{
+			Status: &_type.HttpStatus{
+				Code: _type.StatusCode_Forbidden,
+			},
 		}
+		return &authv2.CheckResponse{
+			Status: &rpc.Status{
+				Code: int32(rpc.PERMISSION_DENIED),
+			},
+			HttpResponse: &authv2.CheckResponse_DeniedResponse{
+				DeniedResponse: deniedHttpResponse,
+			},
+		}, nil
+	}
+	// Check if need ABAC-verify
+	acID := acIDFromReq(req)
+	log.Println(acID)
+	okHttpResponse := &authv2.OkHttpResponse{}
+	if enabledACs, ok := serviceACMetas[acID]; ok {
 		// Forward the enable attribute condition to downstream services for the ABAC verification
+		log.Println("Setting request context ", acID)
 		for _, enabledAC := range enabledACs {
+			log.Printf("Setting request context for %v with %v ", acID, enabledAC)
 			okHttpResponse.Headers = append(okHttpResponse.Headers, &core.HeaderValueOption{
 				Header: &core.HeaderValue{
-					Key: enabledAC,
-					// TODO: Later we should and addition info here,
-					// e.g: the configured metadata comes from control panel
-					Value: "",
+					Key: enabledAC.Name,
+					// the configured metadata comes from control panel
+					Value: enabledAC.Metas,
 				},
 			})
 		}
 	}
 
-	return &v2.CheckResponse{
-		HttpResponse: &v2.CheckResponse_OkResponse{
+	return &authv2.CheckResponse{
+		HttpResponse: &authv2.CheckResponse_OkResponse{
 			OkResponse: okHttpResponse,
 		},
 	}, nil
 }
 
 func main() {
+	// Parse config file
+	wd, _ := os.Getwd()
+	filename := filepath.Join(wd, "cmd/apis-ac-meta-enabled.yaml")
+	b, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Fatalf("Failed to read config file: %v", err)
+	}
+	servicesAPIACMeta := ServicesAPIACMeta{}
+	if err := yaml.Unmarshal(b, &servicesAPIACMeta); err != nil {
+		log.Fatalf("Failed to get config details: %v", err)
+	}
+	if serviceACMetas == nil {
+		serviceACMetas = make(map[string][]AC)
+	}
+	for _, servicesAPIACMeta := range servicesAPIACMeta.Services {
+		for _, acMeta := range servicesAPIACMeta.ACMetas {
+			id := acIDFromConf(servicesAPIACMeta.Service, acMeta.Resource, acMeta.Action)
+			if _, ok := serviceACMetas[id]; !ok {
+				serviceACMetas[id] = acMeta.EnabledACs
+			}
+		}
+	}
+
 	lis, err := net.Listen("tcp", ":9001")
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
@@ -186,7 +250,7 @@ func main() {
 	log.Printf("Listening on %s", lis.Addr())
 
 	s := grpc.NewServer()
-	auth.RegisterAuthorizationServer(s, &server{})
+	authv2alpha.RegisterAuthorizationServer(s, &server{})
 	reflection.Register(s)
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
