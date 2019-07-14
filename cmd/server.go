@@ -61,6 +61,11 @@ func (s *server) InsertEmojis(ctx context.Context, req *proto.EmojiRequest) (*pr
 func (s *server) SayHello(ctx context.Context, req *proto.HelloRequest) (*proto.HelloResponse, error) {
 	log.Printf("Client: %s greeting!", req.Name)
 
+	md, ok := metadata.FromIncomingContext(ctx)
+	if ok {
+		log.Println(md)
+	}
+
 	if meta, ok := IsAttributeConditionEnabled(ctx, ac1); ok {
 		log.Printf("Hi, we got ac in SayHello: %v, with meta: %v\n", ac1, meta)
 	}

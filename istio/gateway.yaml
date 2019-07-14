@@ -70,6 +70,15 @@ spec:
         prefix: /demo-server/
     rewrite:
       uri: /
+#    removeRequestHeaders: [ "X-Forwarded-Proto", "X-Forwarded-Host" ]
+#    appendRequestHeaders:
+#      "X-Forwarded-Proto": "https"
+#      "X-Forwarded-Host": "api.dev.meeraspace.com/meerafs/rest"
+#    headers:
+#      request:
+#        set:
+#          "X-Forwarded-Proto": "https"
+#          "X-Forwarded-Host": "api.dev.meeraspace.com/meerafs/rest"
     route:
       - destination:
           host: server

@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: envoy-lua-x-forwarded
+spec:
+  workloadLabels:
+    app: server
+  filters:
+    - filterName: envoy.lua
+      filterType: HTTP
+      filterConfig:
+        inlineCode: |
+          function envoy_on_request(request_handle)
+            request_handle:headers():replace("x-forwarded-proto", "https")
+            request_handle:headers():replace("x-forwarded-host", "api.dev.meeraspace.com/meerafs/rest")
+            request_handle:headers():replace("x-forwarded-for", "https://api.dev.meeraspace.com/meerafs/rest")
+          end
+          function envoy_on_response(response_handle)
+          end

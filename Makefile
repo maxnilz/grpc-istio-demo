@@ -18,7 +18,6 @@ help:
 	@echo "    run-envoy                   Run the envoy"
 	@echo "    run-server-docker           Run the server over Docker"
 	@echo "    run-client-local            Run the client and connect to local server"
-	@echo "    run-client-istio-grpc-web   Run the client and connect to server with grpc-web via Istio"
 	@echo "    run-client-istio-grpc-raw   Run the client and connect to server with grpc-raw via Istio"
 	@echo "    run-idp-example-app         Run the example frontend app of idp so that we can get token from idp"
 	@echo ""
@@ -89,10 +88,6 @@ run-server-docker:
 .PHONY: run-client-local
 run-client-local:
 	go run -v cmd/client.go --server 'localhost:9000' --text 'I like :pizza: and :sushi:!'
-
-.PHONY: run-client-istio-grpc-web
-run-client-istio-grpc-web:
-	go run -v cmd/client.go --server '$(GATEWAY_URL):31380' --text 'I like :pizza: and :sushi:!'
 
 .PHONY: run-client-istio-grpc-raw
 run-client-istio-grpc-raw:

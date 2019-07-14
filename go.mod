@@ -12,6 +12,7 @@ require (
 	google.golang.org/grpc v1.20.1
 	gopkg.in/kyokomi/emoji.v1 v1.5.1
 	gopkg.in/square/go-jose.v2 v2.3.1 // indirect
+	gopkg.in/yaml.v2 v2.2.2
 	istio.io/api v0.0.0-20190613160329-426c8875e254
 	istio.io/istio v0.0.0-20190614064751-855a16aa9b39
 )
