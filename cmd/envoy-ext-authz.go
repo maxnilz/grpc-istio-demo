@@ -129,7 +129,7 @@ func (s *server) Check(ctx context.Context, req *auth.CheckRequest) (*auth.Check
 	}
 	token := parts[1]
 	// Create oidc provider, should not be here, just for demo
-	oidcProvider, err := oidc.NewProvider(ctx, "http://192.168.39.224:31380/dex")
+	oidcProvider, err := oidc.NewProvider(ctx, "http://192.168.39.224:31284/dex")
 	if err != nil {
 		deniedHttpResponse := &auth.DeniedHttpResponse{
 			Status: &_type.HttpStatus{

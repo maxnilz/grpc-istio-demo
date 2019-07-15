@@ -83,12 +83,6 @@ spec:
       - destination:
           host: server
   - match:
-      - uri:
-          prefix: /dex
-    route:
-      - destination:
-          host: dex
-  - match:
     - port: 31400
     route:
     - destination:
