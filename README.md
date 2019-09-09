@@ -15,8 +15,8 @@ Based on Istio 1.1.7
 7. kubectl apply -f istio/web-ui.yaml
 8. kubectl apply -f istio/gateway.yaml
 9. kubectl apply -f istio/envoyfilter*.yaml
-10. make create-istio-custom-gateway (used by the front-end application only which have no envoy.ext_authz applied)
-11. kubectl apply -f istio/gateway-frontend.yaml
+10. make create-istio-frontend-ingressgateway (used by the front-end application only which have no envoy.ext_authz applied)
+11. kubectl apply -f istio/frontend-gateway.yaml
 12. make run-auth-server
 13. make run-idp-example-app
 

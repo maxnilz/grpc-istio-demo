@@ -1,0 +1,158 @@
+# This is used to generate minimal demo mode. It is included from demo and demo-auth values.
+# It is shipped with the release, used for bookinfo or quick installation of istio.
+# Includes components used in the demo, defaults to alpha3 rules.
+# Note: please only put common configuration for the demo profiles here.
+global:
+  proxy:
+    accessLogFile: "/dev/stdout"
+    resources:
+      requests:
+        cpu: 10m
+        memory: 40Mi
+    image: proxy_debug:1.2.5
+
+  disablePolicyChecks: false
+
+sidecarInjectorWebhook:
+  enabled: true
+  # If true, webhook or istioctl injector will rewrite PodSpec for liveness
+  # health check to redirect request to sidecar. This makes liveness check work
+  # even when mTLS is enabled.
+  rewriteAppHTTPProbe: false
+
+pilot:
+  autoscaleEnabled: false
+  traceSampling: 100.0
+  resources:
+    requests:
+      cpu: 10m
+      memory: 100Mi
+
+mixer:
+  policy:
+    enabled: true
+    autoscaleEnabled: false
+    resources:
+      requests:
+        cpu: 10m
+        memory: 100Mi
+
+  telemetry:
+    enabled: true
+    autoscaleEnabled: false
+    resources:
+      requests:
+        cpu: 50m
+        memory: 100Mi
+ 
+  adapters:
+    stdio:
+      enabled: true
+ 
+grafana:
+  enabled: true
+
+tracing:
+  enabled: true
+
+kiali:
+  enabled: true
+  createDemoSecret: true
+
+gateways:
+  istio-ingressgateway:
+    autoscaleEnabled: false
+    resources:
+      requests:
+        cpu: 10m
+        memory: 40Mi
+
+  istio-egressgateway:
+    enabled: true
+    autoscaleEnabled: false
+    resources:
+      requests:
+        cpu: 10m
+        memory: 40Mi
+
+  istio-frontend-ingressgateway:
+    enabled: true
+    labels:
+      app: istio-frontend-ingressgateway
+      istio: frontend-ingressgateway
+    replicaCount: 1
+    autoscaleMin: 1
+    autoscaleMax: 5
+    resources: {}
+      # limits:
+      #  cpu: 100m
+      #  memory: 128Mi
+      #requests:
+    #  cpu: 1800m
+    #  memory: 256Mi
+    cpu:
+      targetAverageUtilization: 80
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: {}
+    externalIPs: []
+    serviceAnnotations: {}
+    podAnnotations: {}
+    type: LoadBalancer #change to NodePort, ClusterIP or LoadBalancer if need be
+    #externalTrafficPolicy: Local #change to Local to preserve source IP or Cluster for default behaviour or leave commented out
+    ports:
+      ## You can add custom gateway ports
+      - port: 80
+        targetPort: 80
+        name: http2
+        # nodePort: 31380
+      - port: 443
+        name: https
+        # nodePort: 31390
+      - port: 31400
+        name: tcp
+        # nodePort: 31400
+      # Pilot and Citadel MTLS ports are enabled in gateway - but will only redirect
+      # to pilot/citadel if global.meshExpansion settings are enabled.
+      - port: 15011
+        targetPort: 15011
+        name: tcp-pilot-grpc-tls
+      - port: 8060
+        targetPort: 8060
+        name: tcp-citadel-grpc-tls
+      # Addon ports for kiali are enabled in gateway - but will only redirect if
+      # the gateway configuration for the various components are enabled.
+      - port: 15029
+        targetPort: 15029
+        name: http2-kiali
+      # Telemetry-related ports are enabled in gateway - but will only redirect if
+      # the gateway configuration for the various components are enabled.
+      - port: 15030
+        targetPort: 15030
+        name: http2-prometheus
+      - port: 15031
+        targetPort: 15031
+        name: http2-grafana
+      - port: 15032
+        targetPort: 15032
+        name: http2-tracing
+    secretVolumes:
+      - name: customgateway-certs
+        secretName: istio-customgateway-certs
+        mountPath: /etc/istio/customgateway-certs
+      - name: customgateway-ca-certs
+        secretName: istio-customgateway-ca-certs
+        mountPath: /etc/istio/customgateway-ca-certs
+
+# This is used to generate istio.yaml for minimal, demo mode.
+# It is shipped with the release, used for bookinfo or quick installation of istio.
+# Includes components used in the demo, defaults to alpha3 rules.
+
+# @include <values-istio-demo-common.yaml>
+#
+global:
+  controlPlaneSecurityEnabled: false
+
+  mtls:
+    # Default setting for service-to-service mtls. Can be set explicitly using
+    # destination rules or service annotations.
+    enabled: false

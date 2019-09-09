@@ -1,10 +1,10 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: gateway-bypass
+  name: frontend-gateway
 spec:
   selector:
-    istio: custom-ingressgateway
+    istio: frontend-ingressgateway
   servers:
   - port:
       number: 80
@@ -27,7 +27,7 @@ spec:
   hosts:
     - "*"
   gateways:
-  - gateway-bypass
+  - frontend-gateway
   http:
   - match:
       - uri:

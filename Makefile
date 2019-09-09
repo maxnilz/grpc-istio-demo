@@ -8,35 +8,35 @@ help:
 	@echo ""
 	@echo "Available targets are:"
 	@echo ""
-	@echo "    generate-go                 Generate Go files from proto"
-	@echo "    generate-js                 Generate JavaScript files from proto"
-	@echo "    generate-descriptor         Generate Protobuf descriptor files from proto used by envoy grpc-json filter"
+	@echo "    generate-go                 				Generate Go files from proto"
+	@echo "    generate-js                 				Generate JavaScript files from proto"
+	@echo "    generate-descriptor         				Generate Protobuf descriptor files from proto used by envoy grpc-json filter"
 	@echo ""
-	@echo "    run-server                  Run the server"
-	@echo "    run-auth-server             Run the envoy ext auth server"
-	@echo "    run-auth-alpha-server       Run the envoy ext auth v2alpha server"
-	@echo "    run-envoy                   Run the envoy"
-	@echo "    run-server-docker           Run the server over Docker"
-	@echo "    run-client-local            Run the client and connect to local server"
-	@echo "    run-client-istio-grpc-raw   Run the client and connect to server with grpc-raw via Istio"
-	@echo "    run-idp-example-app         Run the example frontend app of idp so that we can get token from idp"
+	@echo "    run-server                  				Run the server"
+	@echo "    run-auth-server             				Run the envoy ext auth server"
+	@echo "    run-auth-alpha-server       				Run the envoy ext auth v2alpha server"
+	@echo "    run-envoy                   				Run the envoy"
+	@echo "    run-server-docker           				Run the server over Docker"
+	@echo "    run-client-local            				Run the client and connect to local server"
+	@echo "    run-client-istio-grpc-raw   				Run the client and connect to server with grpc-raw via Istio"
+	@echo "    run-idp-example-app         				Run the example frontend app of idp so that we can get token from idp"
 	@echo ""
-	@echo "    enable-istio-debug          Enable istio-proxy debug"
-	@echo "    create-istio-custom-gateway Create frontend istio ingressgateway"
+	@echo "    enable-istio-debug          				Enable istio-proxy debug"
+	@echo "    create-istio-frontend-ingressgateway 	Create frontend istio ingressgateway"
 	@echo ""
-	@echo "    build-server                Build the server image"
-	@echo "    build-web-ui                Build the web-ui image"
-	@echo "    build-idp                   Build the idp image"
+	@echo "    build-server                				Build the server image"
+	@echo "    build-web-ui                				Build the web-ui image"
+	@echo "    build-idp                   				Build the idp image"
 	@echo ""
-	@echo "    deploy-server               Deploy the server over Kubernetes"
-	@echo "    deploy-web-ui               Deploy the web-ui over Kubernetes"
-	@echo "    deploy-gateway              Deploy the gateway configuration"
-	@echo "    watch-pods                  Watch the Kubernetes deployment"
+	@echo "    deploy-server               				Deploy the server over Kubernetes"
+	@echo "    deploy-web-ui               				Deploy the web-ui over Kubernetes"
+	@echo "    deploy-gateway              				Deploy the gateway configuration"
+	@echo "    watch-pods                  				Watch the Kubernetes deployment"
 	@echo ""
-	@echo "    inspect-proxy               Inspect the Istio proxy configuration"
-	@echo "    proxy-logs                  Inspect the Istio proxy logs"
+	@echo "    inspect-proxy               				Inspect the Istio proxy configuration"
+	@echo "    proxy-logs                  				Inspect the Istio proxy logs"
 	@echo ""
-	@echo "    reset                       Reset the deployment"
+	@echo "    reset                       				Reset the deployment"
 	@echo ""
 
 .PHONY: get-protoc
@@ -95,7 +95,7 @@ run-client-istio-grpc-raw:
 
 .PHONY: run-idp-example-app
 run-idp-example-app:
-	docker run -p5555:5555 maxnilz/grpc-istio-demo:idp-example-app --issuer http://$(GATEWAY_URL):31284/dex --listen http://0.0.0.0:5555
+	docker run -p5555:5555 maxnilz/grpc-istio-demo:idp-example-app --issuer http://$(GATEWAY_URL):31460/dex --listen http://0.0.0.0:5555
 
 .PHONY: build-server
 build-server:
@@ -112,12 +112,12 @@ build-idp:
 
 .PHONY: enable-istio-debug
 enable-debug:
-	kubectl patch deployment server -p '{"spec": {"template": {"spec": {"containers": [{"name": "istio-proxy", "image": "docker.io/istio/proxy_debug:1.1.7"}]}}}}'
-	cd istio/installer-istio-1.1.7 && helm template install/kubernetes/helm/istio --namespace=istio-system -x templates/configmap.yaml --set global.proxy.accessLogFile="/dev/stdout" | kubectl replace -f -
+	kubectl patch deployment server -p '{"spec": {"template": {"spec": {"containers": [{"name": "istio-proxy", "image": "docker.io/istio/proxy_debug:1.2.5"}]}}}}'
+	cd istio/istio-1.2.5 && helm template install/kubernetes/helm/istio --namespace=istio-system -x templates/configmap.yaml --set global.proxy.accessLogFile="/dev/stdout" | kubectl replace -f -
 
-.PHONY: create-istio-custom-gateway
-create-istio-custom-gateway:
-	cd istio/installer-istio-1.1.7 && helm template install/kubernetes/helm/istio --name istio --namespace istio-system --values install/kubernetes/helm/istio/example-values/values-istio-gateways.yaml | kubectl apply -f
+.PHONY: create-istio-frontend-ingressgateway
+create-istio-frontend-ingressgateway:
+	cd istio/istio-1.2.5 && helm template install/kubernetes/helm/istio --name istio --namespace istio-system --values install/kubernetes/helm/istio/example-values/values-istio-gateways.yaml | kubectl apply -f
 
 .PHONY: deploy-server
 deploy-server:
@@ -150,3 +150,4 @@ reset:
 	kubectl delete -f istio/server.yaml
 	kubectl delete -f istio/web-ui.yaml
 	kubectl delete -f istio/gateway.yaml
+	kubectl delete -f istio/frontend-gateway.yaml
