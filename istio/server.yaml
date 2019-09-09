@@ -11,21 +11,27 @@ spec:
   selector:
     app: server
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: server
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: server
   template:
     metadata:
+      annotations:
+        sidecar.istio.io/userMount: '[{"name": "proto", "mountPath": "/grpc-descriptor", "readonly": true}]'
+        sidecar.istio.io/userVolume: '[{"name": "proto", "persistentVolumeClaim": [{"claimName": "pv-claim"}]}]'
       labels:
         app: server
         version: v1
     spec:
       containers:
-      - name: server
-        image: maxnilz/grpc-istio-demo:server
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 9000
+        - name: server
+          image: maxnilz/grpc-istio-demo:server
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9000
