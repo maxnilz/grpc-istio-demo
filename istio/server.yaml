@@ -24,7 +24,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/userMount: '[{"name": "proto", "mountPath": "/grpc-descriptor", "readonly": true}]'
-        sidecar.istio.io/userVolume: '[{"name": "proto", "persistentVolumeClaim": [{"claimName": "pv-claim"}]}]'
+        sidecar.istio.io/userVolume: '[{"name": "proto", "persistentVolumeClaim": {"claimName": "pv-claim"}}]'
       labels:
         app: server
         version: v1

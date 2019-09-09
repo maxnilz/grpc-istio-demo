@@ -71,8 +71,8 @@ spec:
     rewrite:
       uri: /
     route:
-      - destination:
-          host: server
+    - destination:
+        host: server
   - match:
     - port: 31400
     route:
